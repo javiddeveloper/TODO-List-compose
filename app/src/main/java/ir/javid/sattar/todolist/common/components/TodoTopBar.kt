@@ -1,4 +1,4 @@
-package ir.javid.sattar.todolist.ui.components
+package ir.javid.sattar.todolist.common.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -11,7 +11,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import ir.javid.sattar.todolist.features.todoList.data.model.TodoItem
+import ir.javid.sattar.todolist.domain.model.TodoItem
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TodoTopBar(
