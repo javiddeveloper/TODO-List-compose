@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import androidx.paging.compose.collectAsLazyPagingItems
 import ir.javid.sattar.todolist.features.todoList.ui.todoList.contract.TodoListEvent
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -23,6 +24,7 @@ fun TodoListRoute(
     viewModel: TodoListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val pagedTodos = viewModel.pagedTodos.collectAsLazyPagingItems()
 
     HandleTodoListEvents(
         events = viewModel.events,
@@ -33,6 +35,7 @@ fun TodoListRoute(
 
     TodoListScreen(
         state = uiState,
+        pagedTodos = pagedTodos,
         onIntent = viewModel::sendIntent,
         navController = navController
     )

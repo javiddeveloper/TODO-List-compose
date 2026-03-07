@@ -9,7 +9,7 @@ interface TodoRepository {
 
     fun saveTodo(model: TodoItem): Flow<Unit>
 
-    fun getPagingTodos(): Flow<PagingData<TodoItemEntity>>
+    fun getPagingTodos(): Flow<PagingData<TodoItem>>
 
     fun getTodo(id: Int): Flow<TodoItem>
 

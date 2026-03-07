@@ -24,13 +24,12 @@ sealed class TodoListIntent {
 data class TodoListUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val todos: List<TodoItem> = emptyList(),
     val selectedTodo: TodoItem? = null
 ) : android.os.Parcelable {
 
     sealed class PartialState {
         data object Loading : PartialState()
-        data class Success(val todos: List<TodoItem>) : PartialState()
+        data class Success(val success: Boolean = true) : PartialState() // Changed from todos list
         data class Error(val message: String) : PartialState()
         data class TodoDeleted(val success: Boolean) : PartialState()
         data class TodoPinned(val success: Boolean) : PartialState()
