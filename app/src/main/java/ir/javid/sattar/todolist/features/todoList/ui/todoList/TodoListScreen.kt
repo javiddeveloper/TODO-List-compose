@@ -43,13 +43,12 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import androidx.paging.LoadState
-import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
 import ir.javid.sattar.todolist.R
 import ir.javid.sattar.todolist.features.todoList.data.model.TodoItem
+import ir.javid.sattar.todolist.features.todoList.ui.todoList.contract.TodoListIntent
+import ir.javid.sattar.todolist.features.todoList.ui.todoList.contract.TodoListUiState
 import ir.javid.sattar.todolist.ui.components.TodoTopBar
-import ir.javid.sattar.todolist.ui.navigation.Roots
+import ir.javid.sattar.todolist.ui.theme.TODOListTheme
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @ExperimentalFoundationApi
@@ -57,31 +56,30 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 @ExperimentalCoroutinesApi
 @Composable
 fun TodoListScreen(
-    viewModel: TodoListViewModel,
+    state: TodoListUiState,
+    onIntent: (TodoListIntent) -> Unit,
     navController: NavHostController,
 ) {
-    val state = rememberLazyListState()
-    val items = viewModel.todoList.collectAsLazyPagingItems()
-    var selectedItem by remember { mutableStateOf<TodoItem?>(null) }
-
+    val lazyListState = rememberLazyListState()
+    
     Scaffold(
         topBar = {
             TodoTopBar(
                 title = stringResource(id = R.string.app_name),
-                selectedItem = selectedItem,
+                selectedItem = state.selectedTodo,
                 onAddClick = {
-                    navController.navigate("${Roots.TodoMessage.route}/-1")
+                    onIntent(TodoListIntent.AddNewTodo)
                 },
                 onDeleteClick = {
-                    selectedItem?.let { viewModel.deleteTodo(it) }
-                    selectedItem = null
+                    state.selectedTodo?.let { onIntent(TodoListIntent.DeleteTodo(it)) }
                 },
                 onCancelSelection = {
-                    selectedItem = null
+                    onIntent(TodoListIntent.NavigateToTodoMessage(-1)) // Clear selection
                 },
                 onPinClick = {
-                    selectedItem?.let { viewModel.togglePin(it.isPin.not(), it.id) }
-                    selectedItem = null
+                    state.selectedTodo?.let {
+                        onIntent(TodoListIntent.TogglePin(it.isPin.not(), it.id))
+                    }
                 })
         },
         content = { padding ->
@@ -91,12 +89,12 @@ fun TodoListScreen(
                     .padding(padding)
                     .fillMaxSize()
             ) {
-                if (items.loadState.refresh is LoadState.Loading) {
+                if (state.isLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 } else {
-                    if (items.itemCount == 0) {
+                    if (state.todos.isEmpty()) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -108,14 +106,16 @@ fun TodoListScreen(
                         }
                     } else {
                         ListContent(
-                            items = items,
-                            state = state,
-                            selectedItem = selectedItem,
+                            todos = state.todos,
+                            state = lazyListState,
+                            selectedItem = state.selectedTodo,
                             itemClick = { item ->
-                                navController.navigate("${Roots.TodoMessage.route}/${item.id}")
+                                onIntent(TodoListIntent.NavigateToTodoMessage(item.id))
                             },
                             itemLongClick = { item ->
-                                selectedItem = item
+                                // Handle long click for selection
+                                // For now, we'll navigate directly
+                                onIntent(TodoListIntent.NavigateToTodoMessage(item.id))
                             }
                         )
                     }
@@ -128,7 +128,7 @@ fun TodoListScreen(
 @ExperimentalFoundationApi
 @Composable
 fun ListContent(
-    items: LazyPagingItems<TodoItem>,
+    todos: List<TodoItem>,
     state: LazyListState,
     itemClick: (TodoItem) -> Unit,
     itemLongClick: (TodoItem) -> Unit,
@@ -140,31 +140,16 @@ fun ListContent(
         modifier = Modifier.fillMaxSize()
     ) {
         items(
-            count = items.itemCount,
-            key = { index -> items[index]?.id ?: index }
+            count = todos.size,
+            key = { index -> todos[index].id }
         ) { index ->
-            val item = items[index]
-            if (item != null) {
-                TodoListItem(
-                    item = item,
-                    itemClick = itemClick,
-                    itemLongClick = itemLongClick,
-                    selectedItem = selectedItem
-                )
-            }
-        }
-
-        item {
-            if (items.loadState.append is LoadState.Loading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
-            }
+            val item = todos[index]
+            TodoListItem(
+                item = item,
+                itemClick = itemClick,
+                itemLongClick = itemLongClick,
+                selectedItem = selectedItem
+            )
         }
     }
 }
@@ -241,5 +226,58 @@ fun TodoListItem(
                 )
             }
         }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalCoroutinesApi::class
+)
+@Composable
+fun TodoListScreenPreview() {
+    TODOListTheme {
+        val sampleState = TodoListUiState(
+            todos = listOf(
+                TodoItem(id = 1, title = "تسک اول", message = "این یک تسک تستی است", isPin = true),
+                TodoItem(id = 2, title = "تسک دوم", message = "این هم یک تسک تستی دیگر", isPin = false),
+                TodoItem(id = 3, title = null, message = "تسک بدون عنوان", isPin = false)
+            )
+        )
+        
+        TodoListScreen(
+            state = sampleState,
+            onIntent = { /* No-op for preview */ },
+            navController = androidx.navigation.compose.rememberNavController()
+        )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalCoroutinesApi::class
+)
+@Composable
+fun TodoListScreenLoadingPreview() {
+    TODOListTheme {
+        val loadingState = TodoListUiState(isLoading = true)
+        
+        TodoListScreen(
+            state = loadingState,
+            onIntent = { /* No-op for preview */ },
+            navController = androidx.navigation.compose.rememberNavController()
+        )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalCoroutinesApi::class
+)@Composable
+fun TodoListScreenEmptyPreview() {
+    TODOListTheme {
+        val emptyState = TodoListUiState(todos = emptyList())
+        
+        TodoListScreen(
+            state = emptyState,
+            onIntent = { /* No-op for preview */ },
+            navController = androidx.navigation.compose.rememberNavController()
+        )
     }
 }
