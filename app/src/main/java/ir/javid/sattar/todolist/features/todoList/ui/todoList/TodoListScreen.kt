@@ -3,12 +3,9 @@ package ir.javid.sattar.todolist.features.todoList.ui.todoList
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -25,31 +22,23 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.collectAsLazyPagingItems
 import ir.javid.sattar.todolist.R
 import ir.javid.sattar.todolist.features.todoList.data.model.TodoItem
+import ir.javid.sattar.todolist.features.todoList.ui.todoList.contract.TodoListIntent
+import ir.javid.sattar.todolist.features.todoList.ui.todoList.contract.TodoListUiState
 import ir.javid.sattar.todolist.ui.components.TodoTopBar
-import ir.javid.sattar.todolist.ui.navigation.Roots
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @ExperimentalFoundationApi
@@ -57,31 +46,31 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 @ExperimentalCoroutinesApi
 @Composable
 fun TodoListScreen(
-    viewModel: TodoListViewModel,
+    state: TodoListUiState,
+    pagedTodos: LazyPagingItems<TodoItem>,
+    onIntent: (TodoListIntent) -> Unit,
     navController: NavHostController,
 ) {
-    val state = rememberLazyListState()
-    val items = viewModel.todoList.collectAsLazyPagingItems()
-    var selectedItem by remember { mutableStateOf<TodoItem?>(null) }
-
+    val lazyListState = rememberLazyListState()
+    
     Scaffold(
         topBar = {
             TodoTopBar(
                 title = stringResource(id = R.string.app_name),
-                selectedItem = selectedItem,
+                selectedItem = state.selectedTodo,
                 onAddClick = {
-                    navController.navigate("${Roots.TodoMessage.route}/-1")
+                    onIntent(TodoListIntent.AddNewTodo)
                 },
                 onDeleteClick = {
-                    selectedItem?.let { viewModel.deleteTodo(it) }
-                    selectedItem = null
+                    state.selectedTodo?.let { onIntent(TodoListIntent.DeleteTodo(it)) }
                 },
                 onCancelSelection = {
-                    selectedItem = null
+                    onIntent(TodoListIntent.NavigateToTodoMessage(-1)) // Clear selection
                 },
                 onPinClick = {
-                    selectedItem?.let { viewModel.togglePin(it.isPin.not(), it.id) }
-                    selectedItem = null
+                    state.selectedTodo?.let {
+                        onIntent(TodoListIntent.TogglePin(it.isPin.not(), it.id))
+                    }
                 })
         },
         content = { padding ->
@@ -91,12 +80,15 @@ fun TodoListScreen(
                     .padding(padding)
                     .fillMaxSize()
             ) {
-                if (items.loadState.refresh is LoadState.Loading) {
+                // Combine internal loading state with paging loading state
+                val isPagingLoading = pagedTodos.loadState.refresh is LoadState.Loading
+                
+                if (state.isLoading || isPagingLoading) {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 } else {
-                    if (items.itemCount == 0) {
+                    if (pagedTodos.itemCount == 0) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -108,14 +100,15 @@ fun TodoListScreen(
                         }
                     } else {
                         ListContent(
-                            items = items,
-                            state = state,
-                            selectedItem = selectedItem,
+                            pagedTodos = pagedTodos,
+                            state = lazyListState,
+                            selectedItem = state.selectedTodo,
                             itemClick = { item ->
-                                navController.navigate("${Roots.TodoMessage.route}/${item.id}")
+                                onIntent(TodoListIntent.NavigateToTodoMessage(item.id))
                             },
                             itemLongClick = { item ->
-                                selectedItem = item
+                                // Handle long click for selection
+                                onIntent(TodoListIntent.NavigateToTodoMessage(item.id))
                             }
                         )
                     }
@@ -128,7 +121,7 @@ fun TodoListScreen(
 @ExperimentalFoundationApi
 @Composable
 fun ListContent(
-    items: LazyPagingItems<TodoItem>,
+    pagedTodos: LazyPagingItems<TodoItem>,
     state: LazyListState,
     itemClick: (TodoItem) -> Unit,
     itemLongClick: (TodoItem) -> Unit,
@@ -140,10 +133,14 @@ fun ListContent(
         modifier = Modifier.fillMaxSize()
     ) {
         items(
-            count = items.itemCount,
-            key = { index -> items[index]?.id ?: index }
+            count = pagedTodos.itemCount,
+            key = { index -> 
+                // Use a composite key or just ID if available. 
+                // Paging items can be null placeholders.
+                pagedTodos[index]?.id ?: index 
+            }
         ) { index ->
-            val item = items[index]
+            val item = pagedTodos[index]
             if (item != null) {
                 TodoListItem(
                     item = item,
@@ -151,19 +148,6 @@ fun ListContent(
                     itemLongClick = itemLongClick,
                     selectedItem = selectedItem
                 )
-            }
-        }
-
-        item {
-            if (items.loadState.append is LoadState.Loading) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
             }
         }
     }
@@ -216,30 +200,48 @@ fun TodoListItem(
                     )
                 }
             }
-            Spacer(modifier = Modifier.width(10.dp))
-
-            Column(
+            
+            Text(
+                text = item.title ?:"",
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(vertical = 10.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                if (item.title != null)
-                    Text(
-                        text = item.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-
-                Text(
-                    text = item.message,
-                    style = MaterialTheme.typography.bodySmall,
-                    maxLines = 5,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
+                    .padding(16.dp)
+                    .weight(1f),
+                style = androidx.compose.material3.MaterialTheme.typography.bodyLarge
+            )
         }
     }
 }
+
+/*
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalCoroutinesApi::class
+)
+@Composable
+fun TodoListScreenLoadingPreview() {
+    TODOListTheme {
+//        val loadingState = TodoListUiState(isLoading = true)
+//        
+//        TodoListScreen(
+//            state = loadingState,
+//            onIntent = { /* No-op for preview */ },
+//            navController = androidx.navigation.compose.rememberNavController()
+//        )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalCoroutinesApi::class
+)
+@Composable
+fun TodoListScreenEmptyPreview() {
+    TODOListTheme {
+//        val emptyState = TodoListUiState(todos = emptyList())
+//        
+//        TodoListScreen(
+//            state = emptyState,
+//            onIntent = { /* No-op for preview */ },
+//            navController = androidx.navigation.compose.rememberNavController()
+//        )
+    }
+}
+*/

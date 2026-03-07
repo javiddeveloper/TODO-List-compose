@@ -12,8 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import ir.javid.sattar.todolist.features.todoList.data.model.TodoItem
-
-@ExperimentalMaterial3Api
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TodoTopBar(
     title: String,
@@ -24,7 +23,6 @@ fun TodoTopBar(
     onPinClick: () -> Unit
 ) {
     TopAppBar(
-
         title = { Text(text = title) },
         navigationIcon = {
             if (selectedItem != null) {

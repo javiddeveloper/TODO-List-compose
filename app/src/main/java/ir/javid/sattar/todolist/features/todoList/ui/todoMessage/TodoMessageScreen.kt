@@ -21,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,17 +32,21 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import ir.javid.sattar.todolist.features.todoList.data.model.TodoItem
+import ir.javid.sattar.todolist.features.todoList.ui.todoMessage.contract.TodoMessageIntent
+import ir.javid.sattar.todolist.features.todoList.ui.todoMessage.contract.TodoMessageUiState
 import ir.javid.sattar.todolist.ui.components.CustomTextField
+import ir.javid.sattar.todolist.ui.theme.TODOListTheme
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
-@ExperimentalFoundationApi
-@ExperimentalMaterial3Api
-@ExperimentalCoroutinesApi
+@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
+    ExperimentalCoroutinesApi::class
+)
 @Composable
 fun TodoMessageScreen(
-    viewModel: TodoMessageViewModel,
-    navController: NavHostController,
-    todoId: Int
+    state: TodoMessageUiState,
+    onIntent: (TodoMessageIntent) -> Unit,
+    onSaveTodo: (TodoItem) -> Unit,
+    onNavigateBack: () -> Unit
 ) {
     var title by remember { mutableStateOf("") }
     var note by remember { mutableStateOf("") }
@@ -51,34 +54,22 @@ fun TodoMessageScreen(
     val focusRequester = remember { FocusRequester() }
     val context = LocalContext.current
 
-    val saveState by viewModel.saveState.collectAsState()
-
-    LaunchedEffect(saveState) {
-        when (saveState) {
-            is SaveState.Error -> {
-                Toast.makeText(
-                    context,
-                    (saveState as SaveState.Error).message, Toast.LENGTH_SHORT
-                ).show()
-            }
-
-            SaveState.Idle -> {}
-            SaveState.Success -> {
-                navController.navigateUp()
-            }
-
-            is SaveState.LoadTodo -> {
-                isPinned = (saveState as SaveState.LoadTodo).todoItem.isPin
-                title = (saveState as SaveState.LoadTodo).todoItem.title ?: ""
-                note = (saveState as SaveState.LoadTodo).todoItem.message
-            }
+    // Update local state when todo is loaded
+    LaunchedEffect(state.currentTodo) {
+        state.currentTodo?.let { todo ->
+            title = todo.title ?: ""
+            note = todo.message
+            isPinned = todo.isPin
         }
     }
 
-    LaunchedEffect(todoId) {
-        if (todoId != -1)
-            viewModel.getTodo(todoId)
+    // Handle errors
+    LaunchedEffect(state.errorMessage) {
+        state.errorMessage?.let { error ->
+            Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+        }
     }
+
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
     }
@@ -89,9 +80,9 @@ fun TodoMessageScreen(
                 title = { Text("") },
                 navigationIcon = {
                     IconButton(onClick = {
-                        viewModel.upsertTodo(
+                        onSaveTodo(
                             TodoItem(
-                                id =  if (todoId != -1) todoId else 0,
+                                id = state.currentTodo?.id ?: 0,
                                 title = title,
                                 message = note,
                                 isPin = isPinned
@@ -140,5 +131,54 @@ fun TodoMessageScreen(
                 focusRequester = focusRequester
             )
         }
+    }
+}
+
+@Composable
+fun TodoMessageScreenPreview() {
+    TODOListTheme {
+        val sampleState = TodoMessageUiState(
+            currentTodo = TodoItem(
+                id = 1,
+                title = "تسک تستی",
+                message = "این یک پیام تستی برای پیش‌نمایش است",
+                isPin = true
+            )
+        )
+        
+        TodoMessageScreen(
+            state = sampleState,
+            onIntent = { /* No-op for preview */ },
+            onSaveTodo = { /* No-op for preview */ },
+            onNavigateBack = { /* No-op for preview */ }
+        )
+    }
+}
+
+@Composable
+fun TodoMessageScreenEmptyPreview() {
+    TODOListTheme {
+        val emptyState = TodoMessageUiState()
+        
+        TodoMessageScreen(
+            state = emptyState,
+            onIntent = { /* No-op for preview */ },
+            onSaveTodo = { /* No-op for preview */ },
+            onNavigateBack = { /* No-op for preview */ }
+        )
+    }
+}
+
+@Composable
+fun TodoMessageScreenLoadingPreview() {
+    TODOListTheme {
+        val loadingState = TodoMessageUiState(isLoading = true)
+        
+        TodoMessageScreen(
+            state = loadingState,
+            onIntent = { /* No-op for preview */ },
+            onSaveTodo = { /* No-op for preview */ },
+            onNavigateBack = { /* No-op for preview */ }
+        )
     }
 }
