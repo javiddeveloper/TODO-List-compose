@@ -1,4 +1,4 @@
-package ir.javid.sattar.todolist.ui.theme
+package ir.javid.sattar.todolist.common.theme
 
 import androidx.compose.ui.graphics.Color
 

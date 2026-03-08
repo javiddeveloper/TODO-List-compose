@@ -1,7 +1,7 @@
-package ir.javid.sattar.todolist.features.todoList.domain
+package ir.javid.sattar.todolist.domain.useCases
 
 import androidx.paging.PagingData
-import ir.javid.sattar.todolist.features.todoList.data.model.TodoItem
+import ir.javid.sattar.todolist.domain.model.TodoItem
 import kotlinx.coroutines.flow.Flow
 
 interface TodoListUseCase {

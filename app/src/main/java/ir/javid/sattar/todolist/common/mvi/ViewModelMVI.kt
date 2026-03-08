@@ -1,4 +1,4 @@
-package ir.javid.sattar.todolist.ui.mvi
+package ir.javid.sattar.todolist.common.mvi
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

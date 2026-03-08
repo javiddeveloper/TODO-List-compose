@@ -1,4 +1,4 @@
-package ir.javid.sattar.todolist.features.todoList.data.model
+package ir.javid.sattar.todolist.domain.model
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize

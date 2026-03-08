@@ -1,4 +1,4 @@
-package ir.javid.sattar.todolist.features.todoList.domain
+package ir.javid.sattar.todolist.domain.useCases
 
 import kotlinx.coroutines.flow.Flow
 

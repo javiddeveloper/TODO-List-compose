@@ -7,7 +7,7 @@ import androidx.paging.map
 import ir.javid.sattar.todolist.data.database.dao.TodoDao
 import ir.javid.sattar.todolist.data.database.entity.toTodoItem
 import ir.javid.sattar.todolist.data.database.entity.toTodoItemEntity
-import ir.javid.sattar.todolist.features.todoList.data.model.TodoItem
+import ir.javid.sattar.todolist.domain.model.TodoItem
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map

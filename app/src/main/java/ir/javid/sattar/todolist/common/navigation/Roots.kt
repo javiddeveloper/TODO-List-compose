@@ -1,4 +1,4 @@
-package ir.javid.sattar.todolist.ui.navigation
+package ir.javid.sattar.todolist.common.navigation
 
 sealed class Roots(val route: String){
     data object TodoList: Roots("todo_list_screen")
