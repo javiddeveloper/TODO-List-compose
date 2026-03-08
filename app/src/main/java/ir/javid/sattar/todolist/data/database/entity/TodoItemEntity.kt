@@ -2,7 +2,7 @@ package ir.javid.sattar.todolist.data.database.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import ir.javid.sattar.todolist.features.todoList.data.model.TodoItem
+import ir.javid.sattar.todolist.domain.model.TodoItem
 
 @Entity
 data class TodoItemEntity(

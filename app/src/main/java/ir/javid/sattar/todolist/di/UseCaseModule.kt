@@ -4,18 +4,20 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import ir.javid.sattar.todolist.data.repository.useCases.AddTodoUseCaseImpl
-import ir.javid.sattar.todolist.data.repository.useCases.DeleteTodoUseCaseImpl
-import ir.javid.sattar.todolist.data.repository.useCases.GetTodoUseCaseImpl
-import ir.javid.sattar.todolist.data.repository.useCases.PinTodoUseCaseImpl
-import ir.javid.sattar.todolist.data.repository.useCases.TodoListUseCaseImpl
-import ir.javid.sattar.todolist.data.repository.useCases.UpdateTodoUseCaseImpl
-import ir.javid.sattar.todolist.features.todoList.domain.AddTodoUseCase
-import ir.javid.sattar.todolist.features.todoList.domain.DeleteTodoUseCase
-import ir.javid.sattar.todolist.features.todoList.domain.GetTodoUseCase
-import ir.javid.sattar.todolist.features.todoList.domain.PinTodoUseCase
-import ir.javid.sattar.todolist.features.todoList.domain.TodoListUseCase
-import ir.javid.sattar.todolist.features.todoList.domain.UpdateTodoUseCase
+import ir.javid.sattar.todolist.domain.useCases.AddTodoUseCaseImpl
+import ir.javid.sattar.todolist.domain.useCases.DeleteTodoUseCaseImpl
+import ir.javid.sattar.todolist.domain.useCases.DeleteTodosUseCaseImpl
+import ir.javid.sattar.todolist.domain.useCases.GetTodoUseCaseImpl
+import ir.javid.sattar.todolist.domain.useCases.PinTodoUseCaseImpl
+import ir.javid.sattar.todolist.domain.useCases.TodoListUseCaseImpl
+import ir.javid.sattar.todolist.domain.useCases.UpdateTodoUseCaseImpl
+import ir.javid.sattar.todolist.domain.useCases.AddTodoUseCase
+import ir.javid.sattar.todolist.domain.useCases.DeleteTodoUseCase
+import ir.javid.sattar.todolist.domain.useCases.DeleteTodosUseCase
+import ir.javid.sattar.todolist.domain.useCases.GetTodoUseCase
+import ir.javid.sattar.todolist.domain.useCases.PinTodoUseCase
+import ir.javid.sattar.todolist.domain.useCases.TodoListUseCase
+import ir.javid.sattar.todolist.domain.useCases.UpdateTodoUseCase
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -35,6 +37,11 @@ interface UseCaseModule {
     fun provideDeleteTodoUseCase(
         useCase: DeleteTodoUseCaseImpl,
     ): DeleteTodoUseCase
+
+    @Binds
+    fun provideDeleteTodosUseCase(
+        useCase: DeleteTodosUseCaseImpl,
+    ): DeleteTodosUseCase
 
     @Binds
     fun providePinTodoUseCase(
