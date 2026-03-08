@@ -4,7 +4,7 @@ A modern Android application demonstrating **Clean Architecture**, **MVVM**, and
 
 It features a local Todo list with **Paging 3** for efficient list handling and **Room** for local persistence, ensuring a smooth user experience even with large datasets.
 
-<a href="https://github.com/javiddeveloper/TODO-List-compose/blob/master/app-debug.apk">Download APK File for review</a>
+<a href="https://github.com/javiddeveloper/TODO-List-compose/releases/tag/v1.0">Download latest release (v1.0)</a>
 
 ## Screenshots
 
