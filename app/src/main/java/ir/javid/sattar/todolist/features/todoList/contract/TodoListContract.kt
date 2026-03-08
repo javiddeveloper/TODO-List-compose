@@ -1,7 +1,7 @@
 package ir.javid.sattar.todolist.features.todoList.ui.todoList.contract
 
 import androidx.compose.runtime.Immutable
-import ir.javid.sattar.todolist.features.todoList.data.model.TodoItem
+import ir.javid.sattar.todolist.domain.model.TodoItem
 import kotlinx.parcelize.Parcelize
 
 sealed class TodoListEvent {
@@ -17,6 +17,9 @@ sealed class TodoListIntent {
     data class TogglePin(val isPin: Boolean, val todoId: Int) : TodoListIntent()
     data class NavigateToTodoMessage(val todoId: Int) : TodoListIntent()
     data object AddNewTodo : TodoListIntent()
+    data class ToggleSelect(val todoId: Int) : TodoListIntent()
+    data object ClearSelection : TodoListIntent()
+    data object DeleteSelected : TodoListIntent()
 }
 
 @Immutable
@@ -24,7 +27,8 @@ sealed class TodoListIntent {
 data class TodoListUiState(
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
-    val selectedTodo: TodoItem? = null
+    val selectedTodo: TodoItem? = null,
+    val selectedIds: Set<Int> = emptySet()
 ) : android.os.Parcelable {
 
     sealed class PartialState {
@@ -34,5 +38,6 @@ data class TodoListUiState(
         data class TodoDeleted(val success: Boolean) : PartialState()
         data class TodoPinned(val success: Boolean) : PartialState()
         data class TodoSelected(val todo: TodoItem?) : PartialState()
+        data class SelectionChanged(val ids: Set<Int>) : PartialState()
     }
 }

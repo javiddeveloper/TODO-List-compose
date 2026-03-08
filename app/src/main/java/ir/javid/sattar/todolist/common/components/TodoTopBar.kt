@@ -11,21 +11,20 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import ir.javid.sattar.todolist.domain.model.TodoItem
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TodoTopBar(
     title: String,
-    selectedItem: TodoItem?,
+    selectedCount: Int,
+    selectionActive: Boolean,
     onAddClick: () -> Unit,
     onDeleteClick: () -> Unit,
     onCancelSelection: () -> Unit,
-    onPinClick: () -> Unit
 ) {
     TopAppBar(
-        title = { Text(text = title) },
+        title = { Text(text = if (selectionActive) selectedCount.toString() else title) },
         navigationIcon = {
-            if (selectedItem != null) {
+            if (selectionActive) {
                 IconButton(onClick = onCancelSelection) {
                     Icon(
                         imageVector = Icons.Default.Close,
@@ -35,13 +34,7 @@ fun TodoTopBar(
             }
         },
         actions = {
-            if (selectedItem != null) {
-                IconButton(onClick = onPinClick) {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = "Pin/Unpin todo"
-                    )
-                }
+            if (selectionActive) {
                 IconButton(onClick = onDeleteClick) {
                     Icon(
                         imageVector = Icons.Default.Delete,

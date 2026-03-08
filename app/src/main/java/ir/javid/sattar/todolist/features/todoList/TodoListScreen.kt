@@ -22,6 +22,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,15 +31,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import ir.javid.sattar.todolist.R
-import ir.javid.sattar.todolist.features.todoList.data.model.TodoItem
+import ir.javid.sattar.todolist.domain.model.TodoItem
 import ir.javid.sattar.todolist.features.todoList.ui.todoList.contract.TodoListIntent
 import ir.javid.sattar.todolist.features.todoList.ui.todoList.contract.TodoListUiState
-import ir.javid.sattar.todolist.ui.components.TodoTopBar
+import ir.javid.sattar.todolist.common.components.TodoTopBar
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @ExperimentalFoundationApi
@@ -57,20 +59,16 @@ fun TodoListScreen(
         topBar = {
             TodoTopBar(
                 title = stringResource(id = R.string.app_name),
-                selectedItem = state.selectedTodo,
+                selectedCount = state.selectedIds.size,
+                selectionActive = state.selectedIds.isNotEmpty(),
                 onAddClick = {
                     onIntent(TodoListIntent.AddNewTodo)
                 },
                 onDeleteClick = {
-                    state.selectedTodo?.let { onIntent(TodoListIntent.DeleteTodo(it)) }
+                    onIntent(TodoListIntent.DeleteSelected)
                 },
                 onCancelSelection = {
-                    onIntent(TodoListIntent.NavigateToTodoMessage(-1)) // Clear selection
-                },
-                onPinClick = {
-                    state.selectedTodo?.let {
-                        onIntent(TodoListIntent.TogglePin(it.isPin.not(), it.id))
-                    }
+                    onIntent(TodoListIntent.ClearSelection)
                 })
         },
         content = { padding ->
@@ -102,13 +100,17 @@ fun TodoListScreen(
                         ListContent(
                             pagedTodos = pagedTodos,
                             state = lazyListState,
-                            selectedItem = state.selectedTodo,
+                            selectionActive = state.selectedIds.isNotEmpty(),
+                            selectedIds = state.selectedIds,
                             itemClick = { item ->
-                                onIntent(TodoListIntent.NavigateToTodoMessage(item.id))
+                                if (state.selectedIds.isNotEmpty()) {
+                                    onIntent(TodoListIntent.ToggleSelect(item.id))
+                                } else {
+                                    onIntent(TodoListIntent.NavigateToTodoMessage(item.id))
+                                }
                             },
                             itemLongClick = { item ->
-                                // Handle long click for selection
-                                onIntent(TodoListIntent.NavigateToTodoMessage(item.id))
+                                onIntent(TodoListIntent.ToggleSelect(item.id))
                             }
                         )
                     }
@@ -125,7 +127,8 @@ fun ListContent(
     state: LazyListState,
     itemClick: (TodoItem) -> Unit,
     itemLongClick: (TodoItem) -> Unit,
-    selectedItem: TodoItem?
+    selectionActive: Boolean,
+    selectedIds: Set<Int>
 ) {
     LazyColumn(
         state = state,
@@ -146,7 +149,8 @@ fun ListContent(
                     item = item,
                     itemClick = itemClick,
                     itemLongClick = itemLongClick,
-                    selectedItem = selectedItem
+                    selectionActive = selectionActive,
+                    selected = selectedIds.contains(item.id)
                 )
             }
         }
@@ -159,7 +163,8 @@ fun TodoListItem(
     item: TodoItem,
     itemClick: (TodoItem) -> Unit,
     itemLongClick: (TodoItem) -> Unit,
-    selectedItem: TodoItem?
+    selectionActive: Boolean,
+    selected: Boolean
 ) {
     Card(
         modifier = Modifier
@@ -168,7 +173,7 @@ fun TodoListItem(
             .padding(horizontal = 16.dp, vertical = 8.dp)
             .combinedClickable(
                 onClick = {
-                    if (selectedItem == null) {
+                    if (!selectionActive) {
                         itemClick(item)
                     } else {
                         itemLongClick(item)
@@ -179,14 +184,20 @@ fun TodoListItem(
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent),
         border = BorderStroke(
-            width = if (selectedItem == item) 3.dp else 1.dp,
-            color = if (selectedItem == item) Color.Blue else Color.Gray
+            width = if (selected) 3.dp else 1.dp,
+            color = if (selected) Color.Blue else Color.Gray
         )
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            if (selectionActive) {
+                Checkbox(
+                    checked = selected,
+                    onCheckedChange = { itemLongClick(item) }
+                )
+            }
             if (item.isPin) {
                 Box(
                     modifier = Modifier
@@ -201,47 +212,30 @@ fun TodoListItem(
                 }
             }
             
-            Text(
-                text = item.title ?:"",
+            androidx.compose.foundation.layout.Column(
                 modifier = Modifier
                     .padding(16.dp)
-                    .weight(1f),
-                style = androidx.compose.material3.MaterialTheme.typography.bodyLarge
-            )
+                    .weight(1f)
+            ) {
+                val hasTitle = item.title?.isNotBlank() == true
+                if (hasTitle) {
+                    Text(
+                        text = item.title ?: "",
+                        style = androidx.compose.material3.MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                    Text(
+                        text = item.message,
+                        style = androidx.compose.material3.MaterialTheme.typography.bodyMedium
+                    )
+                } else {
+                    Text(
+                        text = item.message,
+                        style = androidx.compose.material3.MaterialTheme.typography.bodyLarge
+                    )
+                }
+            }
         }
     }
 }
-
-/*
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
-    ExperimentalCoroutinesApi::class
-)
-@Composable
-fun TodoListScreenLoadingPreview() {
-    TODOListTheme {
-//        val loadingState = TodoListUiState(isLoading = true)
-//        
-//        TodoListScreen(
-//            state = loadingState,
-//            onIntent = { /* No-op for preview */ },
-//            navController = androidx.navigation.compose.rememberNavController()
-//        )
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
-    ExperimentalCoroutinesApi::class
-)
-@Composable
-fun TodoListScreenEmptyPreview() {
-    TODOListTheme {
-//        val emptyState = TodoListUiState(todos = emptyList())
-//        
-//        TodoListScreen(
-//            state = emptyState,
-//            onIntent = { /* No-op for preview */ },
-//            navController = androidx.navigation.compose.rememberNavController()
-//        )
-    }
-}
-*/
