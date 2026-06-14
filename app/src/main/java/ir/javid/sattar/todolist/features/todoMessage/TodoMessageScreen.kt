@@ -13,6 +13,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
@@ -20,6 +22,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -27,16 +30,19 @@ import androidx.navigation.NavHostController
 import ir.javid.sattar.todolist.common.components.CustomTextField
 import ir.javid.sattar.todolist.features.todoMessage.contract.TodoMessageIntent
 import ir.javid.sattar.todolist.features.todoMessage.contract.TodoMessageUiState
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TodoMessageScreen(
     state: TodoMessageUiState,
     onIntent: (TodoMessageIntent) -> Unit,
-    navController: NavHostController
+    navController: NavHostController,
+    snackbarHostState: SnackbarHostState,
 ) {
     var title by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(state.todo) {
         state.todo?.let {
@@ -56,12 +62,21 @@ fun TodoMessageScreen(
                 },
                 actions = {
                     IconButton(onClick = {
+                        if (message.isBlank()) {
+                            scope.launch {
+                                snackbarHostState.showSnackbar("متن پیام نمی‌تواند خالی باشد")
+                            }
+                            return@IconButton
+                        }
                         if (state.todo == null) {
-                            onIntent(TodoMessageIntent.SaveTodo(title, message))
+                            onIntent(TodoMessageIntent.SaveTodo(title.ifBlank { null }, message))
                         } else {
                             onIntent(
                                 TodoMessageIntent.UpdateTodo(
-                                    state.todo.copy(title = title, message = message)
+                                    state.todo.copy(
+                                        title = title.ifBlank { null },
+                                        message = message
+                                    )
                                 )
                             )
                         }
@@ -71,6 +86,7 @@ fun TodoMessageScreen(
                 }
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         content = { padding ->
             Column(
                 modifier = Modifier
@@ -84,7 +100,7 @@ fun TodoMessageScreen(
                     placeholder = "Title",
                     modifier = Modifier.fillMaxWidth()
                 )
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 CustomTextField(
