@@ -4,13 +4,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import ir.javid.sattar.todolist.R
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TodoTopBar(
@@ -28,7 +30,7 @@ fun TodoTopBar(
                 IconButton(onClick = onCancelSelection) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Cancel selection"
+                        contentDescription = stringResource(R.string.cancel_selection)
                     )
                 }
             }
@@ -38,14 +40,14 @@ fun TodoTopBar(
                 IconButton(onClick = onDeleteClick) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Delete todo"
+                        contentDescription = stringResource(R.string.delete_todo)
                     )
                 }
             } else {
                 IconButton(onClick = onAddClick) {
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = "Add todo"
+                        contentDescription = stringResource(R.string.add_todo_desc)
                     )
                 }
             }

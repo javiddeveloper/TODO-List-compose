@@ -14,6 +14,8 @@ import ir.javid.sattar.todolist.features.todoList.ui.todoList.contract.TodoListE
 import ir.javid.sattar.todolist.features.todoList.ui.todoList.contract.TodoListIntent
 import ir.javid.sattar.todolist.features.todoList.ui.todoList.contract.TodoListUiState
 import ir.javid.sattar.todolist.common.mvi.ViewModelMVI
+import ir.javid.sattar.todolist.R
+import ir.javid.sattar.todolist.common.util.UiText
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
@@ -64,8 +66,10 @@ class TodoListViewModel @Inject constructor(
             emit(TodoListUiState.PartialState.TodoDeleted(true))
             sendEvent(TodoListEvent.ShowDeleteSuccess)
         } catch (e: Exception) {
-            emit(TodoListUiState.PartialState.Error(e.message ?: "خطا در حذف تسک"))
-            sendEvent(TodoListEvent.ShowError(e.message ?: "خطا در حذف تسک"))
+            val message = e.message?.let { UiText.DynamicString(it) }
+                ?: UiText.StringResource(R.string.error_deleting_task)
+            emit(TodoListUiState.PartialState.Error(message))
+            sendEvent(TodoListEvent.ShowError(message))
         }
     }
 
@@ -75,8 +79,10 @@ class TodoListViewModel @Inject constructor(
             emit(TodoListUiState.PartialState.TodoPinned(true))
             sendEvent(TodoListEvent.ShowPinSuccess)
         } catch (e: Exception) {
-            emit(TodoListUiState.PartialState.Error(e.message ?: "خطا در پین کردن تسک"))
-            sendEvent(TodoListEvent.ShowError(e.message ?: "خطا در پین کردن تسک"))
+            val message = e.message?.let { UiText.DynamicString(it) }
+                ?: UiText.StringResource(R.string.error_pinning_task)
+            emit(TodoListUiState.PartialState.Error(message))
+            sendEvent(TodoListEvent.ShowError(message))
         }
     }
 
@@ -105,8 +111,10 @@ class TodoListViewModel @Inject constructor(
                 emit(TodoListUiState.PartialState.Success())
             }
         } catch (e: Exception) {
-            emit(TodoListUiState.PartialState.Error(e.message ?: "خطا در حذف تسک‌ها"))
-            sendEvent(TodoListEvent.ShowError(e.message ?: "خطا در حذف تسک‌ها"))
+            val message = e.message?.let { UiText.DynamicString(it) }
+                ?: UiText.StringResource(R.string.error_deleting_tasks)
+            emit(TodoListUiState.PartialState.Error(message))
+            sendEvent(TodoListEvent.ShowError(message))
         }
     }
 
@@ -157,6 +165,6 @@ class TodoListViewModel @Inject constructor(
         }
     }
 
-    override fun createErrorState(message: String): TodoListUiState.PartialState =
+    override fun createErrorState(message: UiText): TodoListUiState.PartialState =
         TodoListUiState.PartialState.Error(message)
 }
