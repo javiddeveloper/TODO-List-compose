@@ -23,8 +23,7 @@ object DatabaseModule {
             context,
             TodoDatabase::class.java,
             "todo-database"
-        ).fallbackToDestructiveMigration()
-            .build()
+        ).build()
 
     @Provides
     @Singleton

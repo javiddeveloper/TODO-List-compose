@@ -1,7 +1,6 @@
 [versions]
 agp = "8.6.0"
 coilCompose = "2.7.0"
-converterGson = "2.9.0"
 hiltAndroid = "2.51.1"
 hiltCompiler = "1.2.0"
 kotlin = "2.0.21"
@@ -14,9 +13,8 @@ activityCompose = "1.9.0"
 composeBom = "2024.10.00"
 navigationCompose = "2.8.1"
 pagingRuntime = "3.3.0"
-retrofit = "2.9.0"
 roomRuntime = "2.6.1"
-ksp = "2.0.21-1.0.28" 
+ksp = "2.0.21-1.0.28"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -29,7 +27,6 @@ androidx-room-paging = { module = "androidx.room:room-paging", version.ref = "ro
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
-converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltAndroid" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -48,7 +45,6 @@ androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-man
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
-retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

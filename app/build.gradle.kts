@@ -88,10 +88,6 @@ dependencies {
     ksp(libs.androidx.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
-    // retrofit & gson
-    implementation(libs.retrofit)
-    implementation(libs.converter.gson)
-
     // room
     implementation(libs.androidx.room.runtime)
     annotationProcessor(libs.androidx.room.compiler)
