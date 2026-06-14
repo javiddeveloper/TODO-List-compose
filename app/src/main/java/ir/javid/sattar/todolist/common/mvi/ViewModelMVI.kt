@@ -3,6 +3,8 @@ package ir.javid.sattar.todolist.common.mvi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.SavedStateHandle
+import ir.javid.sattar.todolist.R
+import ir.javid.sattar.todolist.common.util.UiText
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
@@ -28,7 +30,9 @@ abstract class ViewModelMVI<STATE : android.os.Parcelable, PARTIAL_STATE, EVENT,
                 .flatMapMerge { intent ->
                     handleIntent(intent)
                         .catch { error ->
-                            emit(createErrorState(error.message ?: "خطای نامشخص"))
+                            val errorMessage = error.message?.let { UiText.DynamicString(it) }
+                                ?: UiText.StringResource(R.string.unknown_error)
+                            emit(createErrorState(errorMessage))
                         }
                 }
                 .scan(uiState.value) { currentState, partialState ->
@@ -62,5 +66,5 @@ abstract class ViewModelMVI<STATE : android.os.Parcelable, PARTIAL_STATE, EVENT,
 
     protected abstract fun handleIntent(intent: INTENT): Flow<PARTIAL_STATE>
     protected abstract fun reduceState(currentState: STATE, partialState: PARTIAL_STATE): STATE
-    protected abstract fun createErrorState(message: String): PARTIAL_STATE
+    protected abstract fun createErrorState(message: UiText): PARTIAL_STATE
 }
