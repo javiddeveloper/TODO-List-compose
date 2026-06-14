@@ -1,6 +1,13 @@
 package ir.javid.sattar.todolist.common.navigation
 
-sealed class Roots(val route: String){
-    data object TodoList: Roots("todo_list_screen")
-    data object TodoMessage: Roots("todo_message_screen")
+import androidx.navigation3.runtime.NavKey
+import kotlinx.serialization.Serializable
+
+@Serializable
+sealed interface Roots : NavKey {
+    @Serializable
+    data object TodoList : Roots
+
+    @Serializable
+    data class TodoMessage(val todoId: Int = -1) : Roots
 }

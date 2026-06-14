@@ -12,8 +12,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.navigation.compose.rememberNavController
+import androidx.navigation3.runtime.rememberNavBackStack
 import dagger.hilt.android.AndroidEntryPoint
+import ir.javid.sattar.todolist.common.navigation.Roots
 import ir.javid.sattar.todolist.common.navigation.SetupNavGraph
 import ir.javid.sattar.todolist.common.theme.TODOListTheme
 
@@ -26,9 +27,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             TODOListTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) {
-                    val navController = rememberNavController()
+                    val backStack = rememberNavBackStack(Roots.TodoList)
                     Box(modifier = Modifier.padding(it)){
-                        SetupNavGraph(navController = navController)
+                        SetupNavGraph(backStack = backStack)
                     }
 
                 }
@@ -42,7 +43,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun GreetingPreview() {
     TODOListTheme {
-        val navController = rememberNavController()
-        SetupNavGraph(navController = navController)
+        val backStack = rememberNavBackStack(Roots.TodoList)
+        SetupNavGraph(backStack = backStack)
     }
 }
