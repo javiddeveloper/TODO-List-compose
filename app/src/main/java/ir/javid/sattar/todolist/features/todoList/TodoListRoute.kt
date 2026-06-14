@@ -9,19 +9,20 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import androidx.paging.compose.collectAsLazyPagingItems
+import ir.javid.sattar.todolist.R
 import ir.javid.sattar.todolist.features.todoList.ui.todoList.TodoListScreen
 import ir.javid.sattar.todolist.features.todoList.ui.todoList.contract.TodoListEvent
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalCoroutinesApi::class,
     ExperimentalMaterial3Api::class
 )
 @Composable
 fun TodoListRoute(
-    navController: NavHostController,
+    onNavigateToTodoMessage: (Int) -> Unit,
     viewModel: TodoListViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -31,16 +32,13 @@ fun TodoListRoute(
     HandleTodoListEvents(
         events = viewModel.events,
         snackbarHostState = snackbarHostState,
-        onNavigateToTodoMessage = { todoId ->
-            navController.navigate("todo_message_screen/$todoId")
-        }
+        onNavigateToTodoMessage = onNavigateToTodoMessage
     )
 
     TodoListScreen(
         state = uiState,
         pagedTodos = pagedTodos,
         onIntent = viewModel::sendIntent,
-        navController = navController,
         snackbarHostState = snackbarHostState
     )
 }
@@ -51,13 +49,14 @@ fun HandleTodoListEvents(
     snackbarHostState: SnackbarHostState,
     onNavigateToTodoMessage: (Int) -> Unit
 ) {
+    val context = LocalContext.current
     LaunchedEffect(key1 = true) {
         events.collect { event ->
             when (event) {
                 is TodoListEvent.NavigateToTodoMessage -> onNavigateToTodoMessage(event.todoId)
-                is TodoListEvent.ShowError -> snackbarHostState.showSnackbar(event.message)
-                is TodoListEvent.ShowDeleteSuccess -> snackbarHostState.showSnackbar("آیتم با موفقیت حذف شد")
-                is TodoListEvent.ShowPinSuccess -> snackbarHostState.showSnackbar("وضعیت پین بروزرسانی شد")
+                is TodoListEvent.ShowError -> snackbarHostState.showSnackbar(event.message.asString(context))
+                is TodoListEvent.ShowDeleteSuccess -> snackbarHostState.showSnackbar(context.getString(R.string.delete_success))
+                is TodoListEvent.ShowPinSuccess -> snackbarHostState.showSnackbar(context.getString(R.string.pin_success))
             }
         }
     }

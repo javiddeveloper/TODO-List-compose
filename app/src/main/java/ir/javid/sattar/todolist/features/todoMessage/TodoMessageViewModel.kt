@@ -10,6 +10,8 @@ import ir.javid.sattar.todolist.features.todoMessage.contract.TodoMessageEvent
 import ir.javid.sattar.todolist.features.todoMessage.contract.TodoMessageIntent
 import ir.javid.sattar.todolist.features.todoMessage.contract.TodoMessageUiState
 import ir.javid.sattar.todolist.common.mvi.ViewModelMVI
+import ir.javid.sattar.todolist.R
+import ir.javid.sattar.todolist.common.util.UiText
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flow
@@ -40,7 +42,9 @@ class TodoMessageViewModel @Inject constructor(
                 emit(TodoMessageUiState.PartialState.Success(todo))
             }
         } catch (e: Exception) {
-            emit(TodoMessageUiState.PartialState.Error(e.message ?: "Error loading todo"))
+            val message = e.message?.let { UiText.DynamicString(it) }
+                ?: UiText.StringResource(R.string.error_loading_todo)
+            emit(TodoMessageUiState.PartialState.Error(message))
         }
     }
 
@@ -51,8 +55,10 @@ class TodoMessageViewModel @Inject constructor(
             emit(TodoMessageUiState.PartialState.Saved)
             sendEvent(TodoMessageEvent.ShowSaveSuccess)
         } catch (e: Exception) {
-            emit(TodoMessageUiState.PartialState.Error(e.message ?: "Error saving todo"))
-            sendEvent(TodoMessageEvent.ShowError(e.message ?: "Error saving todo"))
+            val message = e.message?.let { UiText.DynamicString(it) }
+                ?: UiText.StringResource(R.string.error_saving_todo)
+            emit(TodoMessageUiState.PartialState.Error(message))
+            sendEvent(TodoMessageEvent.ShowError(message))
         }
     }
 
@@ -63,8 +69,10 @@ class TodoMessageViewModel @Inject constructor(
             emit(TodoMessageUiState.PartialState.Saved)
             sendEvent(TodoMessageEvent.ShowSaveSuccess)
         } catch (e: Exception) {
-            emit(TodoMessageUiState.PartialState.Error(e.message ?: "Error updating todo"))
-            sendEvent(TodoMessageEvent.ShowError(e.message ?: "Error updating todo"))
+            val message = e.message?.let { UiText.DynamicString(it) }
+                ?: UiText.StringResource(R.string.error_updating_todo)
+            emit(TodoMessageUiState.PartialState.Error(message))
+            sendEvent(TodoMessageEvent.ShowError(message))
         }
     }
 
@@ -80,6 +88,6 @@ class TodoMessageViewModel @Inject constructor(
         }
     }
 
-    override fun createErrorState(message: String): TodoMessageUiState.PartialState =
+    override fun createErrorState(message: UiText): TodoMessageUiState.PartialState =
         TodoMessageUiState.PartialState.Error(message)
 }

@@ -7,15 +7,15 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
+import androidx.compose.ui.platform.LocalContext
 import ir.javid.sattar.todolist.features.todoMessage.contract.TodoMessageEvent
 import ir.javid.sattar.todolist.features.todoMessage.contract.TodoMessageIntent
 import kotlinx.coroutines.flow.Flow
 
 @Composable
 fun TodoMessageRoute(
-    navController: NavHostController,
     todoId: Int,
+    onNavigateBack: () -> Unit,
     viewModel: TodoMessageViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -30,15 +30,13 @@ fun TodoMessageRoute(
     HandleTodoMessageEvents(
         events = viewModel.events,
         snackbarHostState = snackbarHostState,
-        onSaveSuccess = {
-            navController.popBackStack()
-        }
+        onSaveSuccess = onNavigateBack
     )
 
     TodoMessageScreen(
         state = uiState,
         onIntent = viewModel::sendIntent,
-        navController = navController,
+        onBackClick = onNavigateBack,
         snackbarHostState = snackbarHostState
     )
 }
@@ -49,11 +47,12 @@ fun HandleTodoMessageEvents(
     snackbarHostState: SnackbarHostState,
     onSaveSuccess: () -> Unit
 ) {
+    val context = LocalContext.current
     LaunchedEffect(key1 = true) {
         events.collect { event ->
             when (event) {
                 is TodoMessageEvent.ShowSaveSuccess -> onSaveSuccess()
-                is TodoMessageEvent.ShowError -> snackbarHostState.showSnackbar(event.message)
+                is TodoMessageEvent.ShowError -> snackbarHostState.showSnackbar(event.message.asString(context))
             }
         }
     }

@@ -35,7 +35,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import ir.javid.sattar.todolist.R
@@ -53,7 +52,6 @@ fun TodoListScreen(
     state: TodoListUiState,
     pagedTodos: LazyPagingItems<TodoItem>,
     onIntent: (TodoListIntent) -> Unit,
-    navController: NavHostController,
     snackbarHostState: SnackbarHostState,
 ) {
     val lazyListState = rememberLazyListState()
@@ -96,7 +94,7 @@ fun TodoListScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "You haven't any message\nPress + button to add new message",
+                                text = stringResource(R.string.no_messages),
                                 textAlign = TextAlign.Center
                             )
                         }
@@ -211,7 +209,7 @@ fun TodoListItem(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Lock,
-                        contentDescription = "Pin/Unpin todo"
+                        contentDescription = stringResource(R.string.pin_unpin_desc)
                     )
                 }
             }

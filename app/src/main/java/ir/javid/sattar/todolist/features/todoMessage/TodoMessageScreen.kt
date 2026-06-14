@@ -25,8 +25,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import ir.javid.sattar.todolist.R
 import ir.javid.sattar.todolist.common.components.CustomTextField
 import ir.javid.sattar.todolist.features.todoMessage.contract.TodoMessageIntent
 import ir.javid.sattar.todolist.features.todoMessage.contract.TodoMessageUiState
@@ -37,12 +39,13 @@ import kotlinx.coroutines.launch
 fun TodoMessageScreen(
     state: TodoMessageUiState,
     onIntent: (TodoMessageIntent) -> Unit,
-    navController: NavHostController,
+    onBackClick: () -> Unit,
     snackbarHostState: SnackbarHostState,
 ) {
     var title by remember { mutableStateOf("") }
     var message by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     LaunchedEffect(state.todo) {
         state.todo?.let {
@@ -54,17 +57,17 @@ fun TodoMessageScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = if (state.todo == null) "Add Todo" else "Edit Todo") },
+                title = { Text(text = if (state.todo == null) stringResource(R.string.add_todo) else stringResource(R.string.edit_todo)) },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    IconButton(onClick = onBackClick) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 actions = {
                     IconButton(onClick = {
                         if (message.isBlank()) {
                             scope.launch {
-                                snackbarHostState.showSnackbar("متن پیام نمی‌تواند خالی باشد")
+                                snackbarHostState.showSnackbar(context.getString(R.string.message_empty_error))
                             }
                             return@IconButton
                         }
@@ -81,7 +84,7 @@ fun TodoMessageScreen(
                             )
                         }
                     }) {
-                        Icon(Icons.Default.Check, contentDescription = "Save")
+                        Icon(Icons.Default.Check, contentDescription = stringResource(R.string.save))
                     }
                 }
             )
@@ -97,7 +100,7 @@ fun TodoMessageScreen(
                 CustomTextField(
                     value = title,
                     onValueChange = { title = it },
-                    placeholder = "Title",
+                    placeholder = stringResource(R.string.title),
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -106,7 +109,7 @@ fun TodoMessageScreen(
                 CustomTextField(
                     value = message,
                     onValueChange = { message = it },
-                    placeholder = "Message",
+                    placeholder = stringResource(R.string.message),
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f),
