@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">TODO List</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="error_deleting_task">Error deleting task</string>
+    <string name="error_pinning_task">Error pinning task</string>
+    <string name="error_deleting_tasks">Error deleting tasks</string>
+    <string name="message_empty_error">Message text cannot be empty</string>
+    <string name="delete_success">Item deleted successfully</string>
+    <string name="pin_success">Pin status updated</string>
+    <string name="add_todo">Add Todo</string>
+    <string name="edit_todo">Edit Todo</string>
+    <string name="title">Title</string>
+    <string name="message">Message</string>
+    <string name="back">Back</string>
+    <string name="save">Save</string>
+    <string name="no_messages">You have no messages\nPress + button to add a new message</string>
+    <string name="cancel_selection">Cancel selection</string>
+    <string name="delete_todo">Delete todo</string>
+    <string name="add_todo_desc">Add todo</string>
+    <string name="pin_unpin_desc">Pin/Unpin todo</string>
+    <string name="error_loading_todo">Error loading todo</string>
+    <string name="error_saving_todo">Error saving todo</string>
+    <string name="error_updating_todo">Error updating todo</string>
+    <string name="save_success">Saved successfully</string>
+</resources>
